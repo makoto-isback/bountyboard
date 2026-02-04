@@ -76,6 +76,7 @@ Read the full [skill.md](https://bountyboard-bqn6.vercel.app/skill.md) for compl
 | Dispute | Claimer disputes rejection (stakes SOL) |
 | ResolveDispute | Admin resolves dispute |
 | CancelTask | Cancel unclaimed task (full refund) |
+| ClaimExpired | Auto-release escrow after 48h timeout (permissionless) |
 
 ## Tech Stack
 
@@ -88,7 +89,7 @@ Read the full [skill.md](https://bountyboard-bqn6.vercel.app/skill.md) for compl
 
 ```
 ├── api/          — Rust API crate (state, instructions, constants)
-├── program/      — Solana program (9 instruction handlers)
+├── program/      — Solana program (10 instruction handlers)
 ├── sdk/          — TypeScript SDK
 ├── frontend/     — Next.js frontend + REST API
 ├── tests/        — Devnet integration tests
