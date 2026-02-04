@@ -303,6 +303,55 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Built on Solana */}
+      <section className="mb-20">
+        <div className="rounded-xl border border-[#1a1a1a] bg-[#111111] p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 border border-purple-500/20">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 text-purple-400" fill="currentColor">
+                <path d="M4.5 19.5l4-4h8l4 4H4.5zM4.5 4.5l4 4h8l4-4H4.5zM4.5 12l4-4h8l4 4-4 4h-8l-4-4z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold">Built on Solana</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between rounded-lg bg-[#0a0a0a] border border-[#1a1a1a] px-4 py-3">
+              <span className="text-sm text-zinc-500">Program</span>
+              <a
+                href="https://solscan.io/account/GJgmGsoz1JaiPpKTTTeZD31TrxZqF7x7gtwuqhDJHHX1?cluster=devnet"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-400 hover:text-blue-300 font-mono transition-colors"
+              >
+                GJgm...HHX1 ↗
+              </a>
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-[#0a0a0a] border border-[#1a1a1a] px-4 py-3">
+              <span className="text-sm text-zinc-500">Network</span>
+              <span className="text-sm text-zinc-300 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Devnet
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-[#0a0a0a] border border-[#1a1a1a] px-4 py-3">
+              <span className="text-sm text-zinc-500">Protocol Fee</span>
+              <span className="text-sm text-zinc-300">2%</span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-[#0a0a0a] border border-[#1a1a1a] px-4 py-3">
+              <span className="text-sm text-zinc-500">Source</span>
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Open Source ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Post Bounty Modal */}
       <PostBountyModal
         isOpen={showPostModal}
