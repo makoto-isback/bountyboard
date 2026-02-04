@@ -1,0 +1,21 @@
+[package]
+name = "bountyboard-program"
+description = "BountyBoard on-chain escrow program"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "bountyboard_program"
+
+[features]
+no-entrypoint = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+bountyboard-api.workspace = true
+steel.workspace = true
+solana-program.workspace = true
+bytemuck.workspace = true

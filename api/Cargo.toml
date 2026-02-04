@@ -1,0 +1,16 @@
+[package]
+name = "bountyboard-api"
+description = "API for BountyBoard on-chain escrow protocol"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = []
+
+[dependencies]
+steel.workspace = true
+solana-program.workspace = true
+bytemuck.workspace = true
+num_enum.workspace = true
+thiserror.workspace = true
