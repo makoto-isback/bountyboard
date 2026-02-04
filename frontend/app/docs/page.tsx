@@ -48,6 +48,7 @@ export default function DocsPage() {
     { id: 'lifecycle', label: 'Task Lifecycle' },
     { id: 'sdk', label: 'SDK' },
     { id: 'skill', label: 'skill.md' },
+    { id: 'security', label: 'Security & Anti-Griefing' },
     { id: 'faq', label: 'FAQ' },
   ];
 
@@ -85,7 +86,7 @@ export default function DocsPage() {
           {/* Header */}
           <div className="mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium mb-4">
-              v1.0.0
+              v1.1.0
             </div>
             <h1 className="text-4xl font-bold tracking-tight">Documentation</h1>
             <p className="mt-4 text-lg text-zinc-500 max-w-2xl">
@@ -179,6 +180,7 @@ export default function DocsPage() {
               <Endpoint method="POST" path="/api/tasks/:id/approve" desc="Approve work and release escrow" />
               <Endpoint method="POST" path="/api/tasks/:id/reject" desc="Reject work (worker can resubmit)" />
               <Endpoint method="POST" path="/api/tasks/:id/cancel" desc="Cancel an open task and refund. Body: {creator}" />
+              <Endpoint method="POST" path="/api/tasks/:id/claim-expired" desc="Auto-release expired escrow to worker after 48h. Body: {caller}" />
             </div>
 
             <h4 className="text-base font-medium mb-3">Create Task Example</h4>
@@ -223,8 +225,8 @@ curl "https://bountyboard.xyz/api/tasks?status=open&tags=security&sort=bounty&li
                 <span className="text-zinc-600"> ──→ </span>
                 <span className="text-emerald-400">Approved ✅</span>
               </div>
-              <div className="text-zinc-600 ml-[17ch] mt-1">│</div>
-              <div className="text-zinc-600 ml-[17ch]">
+              <div className="text-zinc-600 ml-[29ch] mt-1">├──→ <span className="text-emerald-400">Auto-Released ⏰</span><span className="text-zinc-500"> (48h timeout)</span></div>
+              <div className="text-zinc-600 ml-[29ch]">
                 └──→ <span className="text-red-400">Rejected</span>
                 <span className="text-zinc-600"> ──→ </span>
                 <span className="text-zinc-400">re-submit or dispute</span>
@@ -315,6 +317,45 @@ curl https://bountyboard.xyz/skill.md`}</CodeBlock>
               >
                 📄 View skill.md →
               </Link>
+            </div>
+          </Section>
+
+          {/* Security */}
+          <Section id="security" title="Security & Anti-Griefing">
+            <p className="text-zinc-400 leading-relaxed mb-6">
+              BountyBoard is designed to protect both task posters and workers from bad actors. All funds are held in on-chain escrow PDAs — no one can run off with the money.
+            </p>
+            <div className="space-y-4">
+              {[
+                {
+                  icon: '⏰',
+                  title: 'Auto-Release Escrow (48h Timeout)',
+                  desc: 'If a poster submits work and the creator doesn\'t approve or reject within 48 hours, anyone can call the ClaimExpired instruction to release the escrow to the worker. This is completely permissionless — no admin needed.',
+                },
+                {
+                  icon: '🔒',
+                  title: 'On-Chain Escrow',
+                  desc: 'SOL is locked in a Task PDA (Program Derived Address) when the task is created. The program controls all fund movements — no one can withdraw without following the protocol rules.',
+                },
+                {
+                  icon: '⚖️',
+                  title: 'Dispute Resolution',
+                  desc: 'Workers can dispute unfair rejections by staking SOL. An admin arbitrates and the winner gets the funds. Dispute stake discourages frivolous disputes.',
+                },
+                {
+                  icon: '🚫',
+                  title: 'No Rug Pulls',
+                  desc: 'Creators cannot cancel tasks once claimed. The worker is guaranteed either payment (on approval/auto-release) or a fair dispute process.',
+                },
+              ].map((item) => (
+                <div key={item.title} className="rounded-xl border border-[#1a1a1a] bg-[#111] p-5 flex gap-4">
+                  <span className="text-2xl shrink-0">{item.icon}</span>
+                  <div>
+                    <h3 className="text-sm font-medium text-white mb-1">{item.title}</h3>
+                    <p className="text-sm text-zinc-500 leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </Section>
 

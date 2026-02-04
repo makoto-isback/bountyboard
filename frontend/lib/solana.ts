@@ -148,9 +148,16 @@ function parseTask(data: Buffer): OnChainTask {
   o += 8;
   const tags = new Uint8Array(data.subarray(o, o + 16));
   o += 16;
-  const submittedAt = Number(data.readBigInt64LE(o));
-  o += 8;
-  const claimedAt = Number(data.readBigInt64LE(o));
+
+  // v2 fields (optional — old 192-byte accounts won't have these)
+  let submittedAt = 0;
+  let claimedAt = 0;
+  if (data.length >= o + 16) {
+    submittedAt = Number(data.readBigInt64LE(o));
+    o += 8;
+    claimedAt = Number(data.readBigInt64LE(o));
+  }
+
   return { id, creator, claimer, bounty, descriptionHash, proofHash, status, createdAt, deadline, tags, submittedAt, claimedAt };
 }
 
@@ -166,12 +173,22 @@ export async function fetchConfig(connection: Connection): Promise<Config> {
 }
 
 export async function fetchAllTasks(connection: Connection): Promise<OnChainTask[]> {
-  // Use getProgramAccounts with a dataSize filter for Task accounts (208 bytes)
-  const TASK_ACCOUNT_SIZE = DISCRIMINATOR_SIZE + 200; // 208
-  const accounts = await connection.getProgramAccounts(PROGRAM_ID, {
-    commitment: "confirmed",
-    filters: [{ dataSize: TASK_ACCOUNT_SIZE }],
-  });
+  // Fetch both old (192 bytes) and new (208 bytes) task accounts
+  const OLD_TASK_SIZE = DISCRIMINATOR_SIZE + 184; // 192 (v1 without timestamps)
+  const NEW_TASK_SIZE = DISCRIMINATOR_SIZE + 200; // 208 (v2 with submitted_at + claimed_at)
+
+  const [oldAccounts, newAccounts] = await Promise.all([
+    connection.getProgramAccounts(PROGRAM_ID, {
+      commitment: "confirmed",
+      filters: [{ dataSize: OLD_TASK_SIZE }],
+    }),
+    connection.getProgramAccounts(PROGRAM_ID, {
+      commitment: "confirmed",
+      filters: [{ dataSize: NEW_TASK_SIZE }],
+    }),
+  ]);
+
+  const accounts = [...oldAccounts, ...newAccounts];
 
   return accounts
     .map((a) => parseTask(a.account.data as Buffer))
