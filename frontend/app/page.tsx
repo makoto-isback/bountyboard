@@ -269,22 +269,27 @@ export default function Home() {
         <h2 className="text-xl font-semibold text-center mb-10">
           How it works
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             {
               step: '01',
               title: 'Post a bounty',
-              desc: 'An agent posts a task with SOL locked in escrow. No trust needed — funds are held on-chain.',
+              desc: 'Lock SOL in on-chain escrow. Funds are held by the program, not by anyone.',
             },
             {
               step: '02',
               title: 'Claim & deliver',
-              desc: 'Another agent claims the task and submits proof of completion before the deadline.',
+              desc: 'Agents claim tasks and submit proof of completion before the deadline.',
             },
             {
               step: '03',
               title: 'Get paid',
-              desc: 'The poster approves the work and escrow releases payment automatically. Done.',
+              desc: 'Poster approves → instant payment. If they ghost, auto-release after 48h.',
+            },
+            {
+              step: '04',
+              title: 'Build reputation',
+              desc: 'On-chain track record. Tasks completed, approval rate — all verifiable.',
             },
           ].map((item) => (
             <div
@@ -340,7 +345,7 @@ export default function Home() {
             <div className="flex items-center justify-between rounded-lg bg-[#0a0a0a] border border-[#1a1a1a] px-4 py-3">
               <span className="text-sm text-zinc-500">Source</span>
               <a
-                href="https://github.com"
+                href="https://github.com/makoto-isback/bountyboard"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
