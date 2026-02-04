@@ -1,11 +1,46 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { tasks, TaskStatus } from '@/lib/mockData';
+import { useState, useEffect, useMemo } from 'react';
+import { tasks as mockTasks, TaskStatus } from '@/lib/mockData';
 import TaskCard from '../components/TaskCard';
 
 type SortOption = 'newest' | 'bounty' | 'deadline';
 type FilterOption = 'all' | TaskStatus;
+
+interface ApiTask {
+  id: string;
+  title: string;
+  description: string;
+  bounty: number;
+  status: string;
+  poster: string;
+  claimer: string | null;
+  tags: string[];
+  created_at: string;
+  deadline_hours: number;
+  proof: string | null;
+  tx_signature: string | null;
+  pda_address?: string;
+}
+
+// Convert API task to the format TaskCard expects
+function apiTaskToLocal(t: ApiTask) {
+  return {
+    id: t.id,
+    title: t.title,
+    description: t.description,
+    bounty: t.bounty,
+    status: t.status as TaskStatus,
+    poster: t.poster,
+    claimer: t.claimer || undefined,
+    tags: t.tags,
+    createdAt: new Date(t.created_at),
+    deadline: t.deadline_hours,
+    proof: t.proof || undefined,
+    txSignature: t.tx_signature || undefined,
+    pdaAddress: t.pda_address || undefined,
+  };
+}
 
 const filterOptions: { value: FilterOption; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -25,14 +60,33 @@ const sortOptions: { value: SortOption; label: string }[] = [
 export default function TasksPage() {
   const [filter, setFilter] = useState<FilterOption>('all');
   const [sort, setSort] = useState<SortOption>('newest');
+  const [apiTasks, setApiTasks] = useState<ApiTask[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [usingApi, setUsingApi] = useState(false);
 
-  const filteredTasks = useMemo(() => {
-    let result = [...tasks];
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (filter !== 'all') params.set('status', filter);
+    params.set('sort', sort);
 
+    fetch(`/api/tasks?${params.toString()}`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.data && res.data.length > 0) {
+          setApiTasks(res.data);
+          setUsingApi(true);
+        }
+      })
+      .catch(() => {}) // fallback to mock
+      .finally(() => setLoading(false));
+  }, [filter, sort]);
+
+  // Use mock data as fallback with client-side filtering
+  const fallbackTasks = useMemo(() => {
+    let result = [...mockTasks];
     if (filter !== 'all') {
       result = result.filter((t) => t.status === filter);
     }
-
     switch (sort) {
       case 'newest':
         result.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -44,9 +98,11 @@ export default function TasksPage() {
         result.sort((a, b) => a.deadline - b.deadline);
         break;
     }
-
     return result;
   }, [filter, sort]);
+
+  const displayTasks = usingApi ? apiTasks.map(apiTaskToLocal) : fallbackTasks;
+  const totalCount = usingApi ? apiTasks.length : mockTasks.length;
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
@@ -54,7 +110,7 @@ export default function TasksPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-semibold">Browse Tasks</h1>
         <p className="text-sm text-zinc-500 mt-1">
-          {tasks.length} tasks across the network
+          {loading ? '...' : `${totalCount} tasks across the network`}
         </p>
       </div>
 
@@ -92,12 +148,32 @@ export default function TasksPage() {
 
       {/* Task List */}
       <div className="space-y-3">
-        {filteredTasks.length === 0 ? (
+        {loading ? (
+          // Skeleton loading
+          Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-xl border border-[#1a1a1a] bg-[#111111] p-5 animate-pulse"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div className="flex-1 space-y-3">
+                  <div className="h-5 bg-zinc-800 rounded w-3/4" />
+                  <div className="h-4 bg-zinc-800/60 rounded w-1/2" />
+                </div>
+                <div className="h-6 bg-zinc-800 rounded w-20" />
+              </div>
+              <div className="mt-4 flex gap-2">
+                <div className="h-6 bg-zinc-800/60 rounded w-16" />
+                <div className="h-6 bg-zinc-800/60 rounded w-12" />
+              </div>
+            </div>
+          ))
+        ) : displayTasks.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-zinc-600 text-sm">No tasks found.</p>
           </div>
         ) : (
-          filteredTasks.map((task) => <TaskCard key={task.id} task={task} />)
+          displayTasks.map((task) => <TaskCard key={task.id} task={task} />)
         )}
       </div>
     </div>

@@ -213,6 +213,7 @@ export function onChainTaskToFrontend(task: OnChainTask): {
   deadline_hours: number;
   proof: string | null;
   tx_signature: string | null;
+  pda_address: string;
 } {
   const isZeroKey = task.claimer === "11111111111111111111111111111111";
   const isZeroProof = task.proofHash === "0".repeat(64);
@@ -236,6 +237,7 @@ export function onChainTaskToFrontend(task: OnChainTask): {
     deadline_hours: deadlineHours,
     proof: isZeroProof ? null : task.proofHash,
     tx_signature: null,
+    pda_address: getTaskPDA(task.id).toBase58(),
   };
 }
 

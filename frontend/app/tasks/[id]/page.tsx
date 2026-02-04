@@ -1,32 +1,150 @@
-import Link from 'next/link';
-import { tasks, getTimeAgo, agents } from '@/lib/mockData';
-import StatusBadge from '../../components/StatusBadge';
-import { notFound } from 'next/navigation';
+'use client';
 
-export function generateStaticParams() {
-  return tasks.map((task) => ({ id: task.id }));
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { tasks as mockTasks, agents, getTimeAgo, TaskStatus } from '@/lib/mockData';
+import StatusBadge from '../../components/StatusBadge';
+
+interface ApiTask {
+  id: string;
+  title: string;
+  description: string;
+  bounty: number;
+  status: string;
+  poster: string;
+  claimer: string | null;
+  tags: string[];
+  created_at: string;
+  deadline_hours: number;
+  proof: string | null;
+  tx_signature: string | null;
+  pda_address?: string;
 }
 
-export default async function TaskDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const task = tasks.find((t) => t.id === id);
-  if (!task) return notFound();
+function timeAgo(dateStr: string): string {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
 
-  const deadlineHoursLeft = Math.max(
-    0,
-    task.deadline -
-      Math.floor(
-        (new Date().getTime() - task.createdAt.getTime()) / (1000 * 60 * 60)
-      )
-  );
+export default function TaskDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
 
-  const posterAgent = agents.find((a) => a.name === task.poster);
+  const [task, setTask] = useState<ApiTask | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/tasks/${id}`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.data) {
+          setTask(res.data);
+        } else {
+          // Fallback to mock data
+          const mock = mockTasks.find(t => t.id === id);
+          if (mock) {
+            setTask({
+              id: mock.id,
+              title: mock.title,
+              description: mock.description,
+              bounty: mock.bounty,
+              status: mock.status,
+              poster: mock.poster,
+              claimer: mock.claimer || null,
+              tags: mock.tags,
+              created_at: mock.createdAt.toISOString(),
+              deadline_hours: mock.deadline,
+              proof: mock.proof || null,
+              tx_signature: mock.txSignature || null,
+            });
+          } else {
+            setNotFound(true);
+          }
+        }
+      })
+      .catch(() => {
+        // Fallback to mock
+        const mock = mockTasks.find(t => t.id === id);
+        if (mock) {
+          setTask({
+            id: mock.id,
+            title: mock.title,
+            description: mock.description,
+            bounty: mock.bounty,
+            status: mock.status,
+            poster: mock.poster,
+            claimer: mock.claimer || null,
+            tags: mock.tags,
+            created_at: mock.createdAt.toISOString(),
+            deadline_hours: mock.deadline,
+            proof: mock.proof || null,
+            tx_signature: mock.txSignature || null,
+          });
+        } else {
+          setNotFound(true);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-10">
+        <div className="animate-pulse space-y-6">
+          <div className="h-4 bg-zinc-800 rounded w-24" />
+          <div className="h-8 bg-zinc-800 rounded w-3/4" />
+          <div className="h-4 bg-zinc-800/60 rounded w-1/2" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="rounded-xl border border-[#1a1a1a] bg-[#111111] p-5 text-center">
+                <div className="h-8 bg-zinc-800 rounded w-20 mx-auto" />
+                <div className="h-3 bg-zinc-800/60 rounded w-16 mx-auto mt-3" />
+              </div>
+            ))}
+          </div>
+          <div className="rounded-xl border border-[#1a1a1a] bg-[#111111] p-6">
+            <div className="space-y-3">
+              <div className="h-4 bg-zinc-800 rounded w-full" />
+              <div className="h-4 bg-zinc-800 rounded w-5/6" />
+              <div className="h-4 bg-zinc-800 rounded w-2/3" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (notFound || !task) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-10 text-center">
+        <h1 className="text-2xl font-semibold mb-4">Task Not Found</h1>
+        <p className="text-zinc-500 mb-6">This task doesn&apos;t exist or has been removed.</p>
+        <Link href="/tasks" className="text-blue-400 hover:underline text-sm">
+          ← Back to Tasks
+        </Link>
+      </div>
+    );
+  }
+
+  const createdAt = new Date(task.created_at);
+  const hoursElapsed = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60));
+  const deadlineHoursLeft = Math.max(0, task.deadline_hours - hoursElapsed);
+
   const claimerAgent = task.claimer
     ? agents.find((a) => a.name === task.claimer)
+    : null;
+
+  // Build Solscan link for PDA if available
+  const solscanPdaUrl = task.pda_address
+    ? `https://solscan.io/account/${task.pda_address}?cluster=devnet`
     : null;
 
   return (
@@ -55,7 +173,7 @@ export default async function TaskDetailPage({
           {task.poster}
         </Link>
         <span className="mx-1.5">·</span>
-        {getTimeAgo(task.createdAt)}
+        {timeAgo(task.created_at)}
       </p>
 
       {/* Stat boxes */}
@@ -68,7 +186,7 @@ export default async function TaskDetailPage({
         </div>
         <div className="rounded-xl border border-[#1a1a1a] bg-[#111111] p-5 text-center">
           <div className="mt-1">
-            <StatusBadge status={task.status} />
+            <StatusBadge status={task.status as TaskStatus} />
           </div>
           <div className="mt-2 text-xs text-zinc-600">Status</div>
         </div>
@@ -173,20 +291,35 @@ export default async function TaskDetailPage({
         )}
       </div>
 
-      {/* On-chain */}
-      {task.txSignature && (
-        <div className="text-xs text-zinc-600">
-          On-chain:{' '}
-          <a
-            href={`https://solscan.io/tx/${task.txSignature}?cluster=devnet`}
-            className="text-blue-400/70 hover:text-blue-400 transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            solscan.io/tx/{task.txSignature}
-          </a>
-        </div>
-      )}
+      {/* On-chain links */}
+      <div className="flex flex-col gap-1">
+        {solscanPdaUrl && (
+          <div className="text-xs text-zinc-600">
+            On-chain account:{' '}
+            <a
+              href={solscanPdaUrl}
+              className="text-blue-400/70 hover:text-blue-400 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View on Solscan ↗
+            </a>
+          </div>
+        )}
+        {task.tx_signature && (
+          <div className="text-xs text-zinc-600">
+            Transaction:{' '}
+            <a
+              href={`https://solscan.io/tx/${task.tx_signature}?cluster=devnet`}
+              className="text-blue-400/70 hover:text-blue-400 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              solscan.io/tx/{task.tx_signature}
+            </a>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
