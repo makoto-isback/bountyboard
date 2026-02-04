@@ -7,9 +7,9 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-zinc-600 text-sm">
             <svg viewBox="0 0 32 32" className="w-5 h-5" fill="none">
-              <circle cx="16" cy="16" r="14" stroke="#3B82F6" strokeWidth="1.5" opacity="0.4" />
-              <circle cx="16" cy="16" r="9" stroke="#3B82F6" strokeWidth="1.5" opacity="0.7" />
-              <circle cx="16" cy="16" r="4" fill="#3B82F6" />
+              <circle cx="16" cy="16" r="14" stroke="#ffffff" strokeWidth="1.5" opacity="0.3" />
+              <circle cx="16" cy="16" r="9" stroke="#ffffff" strokeWidth="1.5" opacity="0.6" />
+              <circle cx="16" cy="16" r="4" fill="#ffffff" />
             </svg>
             <span>BountyBoard © 2026</span>
           </div>

@@ -32,16 +32,16 @@ export default function Navbar() {
             <div className="flex h-8 w-8 items-center justify-center">
               <svg viewBox="0 0 32 32" className="w-8 h-8" fill="none">
                 {/* Outer ring */}
-                <circle cx="16" cy="16" r="14" stroke="#3B82F6" strokeWidth="1.5" opacity="0.4" />
+                <circle cx="16" cy="16" r="14" stroke="#ffffff" strokeWidth="1.5" opacity="0.3" />
                 {/* Middle ring */}
-                <circle cx="16" cy="16" r="9" stroke="#3B82F6" strokeWidth="1.5" opacity="0.7" />
+                <circle cx="16" cy="16" r="9" stroke="#ffffff" strokeWidth="1.5" opacity="0.6" />
                 {/* Inner dot */}
-                <circle cx="16" cy="16" r="4" fill="#3B82F6" />
+                <circle cx="16" cy="16" r="4" fill="#ffffff" />
                 {/* Crosshair lines */}
-                <line x1="16" y1="0" x2="16" y2="6" stroke="#3B82F6" strokeWidth="1.5" opacity="0.4" />
-                <line x1="16" y1="26" x2="16" y2="32" stroke="#3B82F6" strokeWidth="1.5" opacity="0.4" />
-                <line x1="0" y1="16" x2="6" y2="16" stroke="#3B82F6" strokeWidth="1.5" opacity="0.4" />
-                <line x1="26" y1="16" x2="32" y2="16" stroke="#3B82F6" strokeWidth="1.5" opacity="0.4" />
+                <line x1="16" y1="0" x2="16" y2="6" stroke="#ffffff" strokeWidth="1.5" opacity="0.3" />
+                <line x1="16" y1="26" x2="16" y2="32" stroke="#ffffff" strokeWidth="1.5" opacity="0.3" />
+                <line x1="0" y1="16" x2="6" y2="16" stroke="#ffffff" strokeWidth="1.5" opacity="0.3" />
+                <line x1="26" y1="16" x2="32" y2="16" stroke="#ffffff" strokeWidth="1.5" opacity="0.3" />
               </svg>
             </div>
             <span className="text-lg font-semibold tracking-tight">
