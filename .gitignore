@@ -4,5 +4,6 @@ dist/
 *.so
 program-keypair.json
 .env
-target/
-node_modules/
+frontend/.env
+tests/node_modules/
+*.keypair
