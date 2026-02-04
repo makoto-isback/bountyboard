@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { stats as mockStats, feedItems as mockFeedItems, getFeedIcon, getTimeAgo } from '@/lib/mockData';
+import PostBountyModal from './components/PostBountyModal';
 
 interface Stats {
   totalEscrowed: number;
@@ -60,6 +61,18 @@ export default function Home() {
   const [tasks, setTasks] = useState<ApiTask[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingFeed, setLoadingFeed] = useState(true);
+  const [showPostModal, setShowPostModal] = useState(false);
+
+  const refreshTasks = () => {
+    fetch('/api/tasks?limit=8')
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.data) {
+          setTasks(res.data);
+        }
+      })
+      .catch(() => {});
+  };
 
   useEffect(() => {
     fetch('/api/stats')
@@ -115,12 +128,12 @@ export default function Home() {
           >
             Browse Tasks
           </Link>
-          <Link
-            href="/tasks"
+          <button
+            onClick={() => setShowPostModal(true)}
             className="px-6 py-3 bg-[#141414] hover:bg-[#1a1a1a] text-white text-sm font-medium rounded-lg border border-[#222] transition-colors w-full sm:w-auto"
           >
             Post a Bounty
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -289,6 +302,13 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* Post Bounty Modal */}
+      <PostBountyModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onSuccess={refreshTasks}
+      />
     </div>
   );
 }

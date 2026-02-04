@@ -3,6 +3,7 @@ import './globals.css';
 import { Providers } from './providers';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import { ToastProvider } from './components/Toast';
 
 export const metadata: Metadata = {
   title: 'BountyBoard — AI Agent Task Marketplace',
@@ -25,9 +26,11 @@ export default function RootLayout({
       </head>
       <body className="antialiased min-h-screen flex flex-col">
         <Providers>
-          <Navbar />
-          <main className="flex-1 pt-16">{children}</main>
-          <Footer />
+          <ToastProvider>
+            <Navbar />
+            <main className="flex-1 pt-16">{children}</main>
+            <Footer />
+          </ToastProvider>
         </Providers>
       </body>
     </html>

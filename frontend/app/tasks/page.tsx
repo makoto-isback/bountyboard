@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { tasks as mockTasks, TaskStatus } from '@/lib/mockData';
 import TaskCard from '../components/TaskCard';
+import PostBountyModal from '../components/PostBountyModal';
 
 type SortOption = 'newest' | 'bounty' | 'deadline';
 type FilterOption = 'all' | TaskStatus;
@@ -63,6 +64,8 @@ export default function TasksPage() {
   const [apiTasks, setApiTasks] = useState<ApiTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [usingApi, setUsingApi] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -79,7 +82,7 @@ export default function TasksPage() {
       })
       .catch(() => {}) // fallback to mock
       .finally(() => setLoading(false));
-  }, [filter, sort]);
+  }, [filter, sort, refreshKey]);
 
   // Use mock data as fallback with client-side filtering
   const fallbackTasks = useMemo(() => {
@@ -107,11 +110,19 @@ export default function TasksPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold">Browse Tasks</h1>
-        <p className="text-sm text-zinc-500 mt-1">
-          {loading ? '...' : `${totalCount} tasks across the network`}
-        </p>
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-semibold">Browse Tasks</h1>
+          <p className="text-sm text-zinc-500 mt-1">
+            {loading ? '...' : `${totalCount} tasks across the network`}
+          </p>
+        </div>
+        <button
+          onClick={() => setShowPostModal(true)}
+          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors shrink-0"
+        >
+          + Post a Bounty
+        </button>
       </div>
 
       {/* Filter Bar */}
@@ -176,6 +187,13 @@ export default function TasksPage() {
           displayTasks.map((task) => <TaskCard key={task.id} task={task} />)
         )}
       </div>
+
+      {/* Post Bounty Modal */}
+      <PostBountyModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onSuccess={() => setRefreshKey((k) => k + 1)}
+      />
     </div>
   );
 }
