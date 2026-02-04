@@ -252,12 +252,12 @@ export function onChainTaskToFrontend(task: OnChainTask): {
   return {
     id: String(task.id),
     title: TASK_TITLES[task.descriptionHash] || `Task #${task.id}`,
-    description: `On-chain task #${task.id} (hash: ${task.descriptionHash.slice(0, 16)}...)`,
+    description: TASK_DESCRIPTIONS[task.descriptionHash] || `On-chain task #${task.id} (hash: ${task.descriptionHash.slice(0, 16)}...)`,
     bounty: task.bounty / LAMPORTS_PER_SOL,
     status: statusToString(task.status),
     poster: task.creator.slice(0, 4) + "..." + task.creator.slice(-4),
     claimer: isZeroKey ? null : task.claimer.slice(0, 4) + "..." + task.claimer.slice(-4),
-    tags: decodeTags(task.tags),
+    tags: decodeTags(task.tags, task.descriptionHash),
     created_at: new Date(task.createdAt * 1000).toISOString(),
     deadline_hours: deadlineHours,
     proof: isZeroProof ? null : task.proofHash,
@@ -266,8 +266,39 @@ export function onChainTaskToFrontend(task: OnChainTask): {
   };
 }
 
+/** Known task descriptions mapped by SHA256 hash */
+const TASK_DESCRIPTIONS: Record<string, string> = {
+  "cb071f192d8ef52e1dff1715a2238b0def67821f60ecf3ba821e7a130461c2fd": "Fix the header alignment bug on the landing page.",
+  "5d303a72ff6148f593a5272c6d807a2feca4850c945dd84ce8730fbeedc71171": "Write unit tests for the payment module. Cover happy path, edge cases, and error conditions.",
+  "670a0579683f4c47f00893628c4bacefab155aecb9f7805992d2d82038fe1656": "Audit a Solana Anchor program for common vulnerabilities. Review for missing signer checks, PDA seed collisions, integer overflow, unchecked account ownership, and reentrancy. Provide structured report with severity ratings.",
+  "71a890edd434e7d41d590070218ccc7360d03cb165b6b9731fe4fb01b5e0fa24": "Scrape top 100 Solana NFT collections from Magic Eden. Collect name, floor price, 24h volume, holder count, and listing count. Return as structured JSON with timestamps.",
+  "b2eaa0fb3c8a154c31dcff3da34941d90cfe3eaa5d006ab4018e70740f33ffed": "Build a React component for Solana wallet connection. Support Phantom, Solflare, and Backpack. Include connect/disconnect, balance display, and address truncation. TypeScript + Tailwind.",
+  "0ecb06093a630f25401fdfe579e066a9fd36194a4b3470b24e5fd27a82f68444": "Translate Solana documentation to Japanese. Cover Token Program, Token-2022, and Memo program docs. Maintain technical accuracy and consistent terminology. ~15,000 words.",
+  "59785f651556e992110d695fa3ee18d023cc65e4d0e24b2d720fd7b10e5c1fea": "Write integration tests for a token swap program using solana-program-test. Cover happy path, edge cases, and error conditions. Target >90% code coverage. Include CI config.",
+  "4dd69fb36ce1c412b02b1ff7044128a5e443968a4f7ffba41c6cdef088fd576e": "Create a price feed aggregator for Solana DeFi tokens. Pull from Jupiter, Raydium, and Orca. Output OHLCV in 1m/5m/1h intervals for top 50 tokens. Handle rate limits.",
+  "5e703830ba3bea0f1d050ea50865eb9fba6c838d10efe56ebf6dd24cfe0d156f": "Design a database schema for an NFT marketplace. Cover collections, listings, bids, sales history, user profiles, and royalty tracking. Provide ERD and SQL migrations.",
+  "44ddbcb21f72c621a908d863b37d598e5eae7e19c5f36b4c6e6993d1be1982ee": "Monitor whale wallet transactions on Solana for 24 hours. Track 20 known whale wallets. Alert on transactions >100 SOL or >$10k SPL tokens. Provide summary report with webhook integration.",
+};
+
+/** Known task tags mapped by description hash */
+const TASK_TAGS: Record<string, string[]> = {
+  "cb071f192d8ef52e1dff1715a2238b0def67821f60ecf3ba821e7a130461c2fd": ["frontend", "bugfix"],
+  "5d303a72ff6148f593a5272c6d807a2feca4850c945dd84ce8730fbeedc71171": ["testing", "backend"],
+  "670a0579683f4c47f00893628c4bacefab155aecb9f7805992d2d82038fe1656": ["security", "audit"],
+  "71a890edd434e7d41d590070218ccc7360d03cb165b6b9731fe4fb01b5e0fa24": ["data", "nft"],
+  "b2eaa0fb3c8a154c31dcff3da34941d90cfe3eaa5d006ab4018e70740f33ffed": ["frontend", "react"],
+  "0ecb06093a630f25401fdfe579e066a9fd36194a4b3470b24e5fd27a82f68444": ["translation", "docs"],
+  "59785f651556e992110d695fa3ee18d023cc65e4d0e24b2d720fd7b10e5c1fea": ["testing", "defi"],
+  "4dd69fb36ce1c412b02b1ff7044128a5e443968a4f7ffba41c6cdef088fd576e": ["data", "defi"],
+  "5e703830ba3bea0f1d050ea50865eb9fba6c838d10efe56ebf6dd24cfe0d156f": ["backend", "database"],
+  "44ddbcb21f72c621a908d863b37d598e5eae7e19c5f36b4c6e6993d1be1982ee": ["data", "monitoring"],
+};
+
 /** Decode compact tag bytes to human-readable tags */
-function decodeTags(tags: Uint8Array): string[] {
+function decodeTags(tags: Uint8Array, descHash?: string): string[] {
+  // First check known tags by description hash
+  if (descHash && TASK_TAGS[descHash]) return TASK_TAGS[descHash];
+
   // If tags are all zeros, return default
   if (tags.every((b) => b === 0)) return ["general"];
 
