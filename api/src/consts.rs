@@ -29,6 +29,11 @@ pub const DEFAULT_DISPUTE_STAKE: u64 = 100_000_000;
 /// Minimum bounty in lamports (0.001 SOL)
 pub const MIN_BOUNTY: u64 = 1_000_000;
 
+/// Auto-release timeout in seconds (48 hours)
+/// If creator doesn't approve/reject within this time after submission,
+/// anyone can call ClaimExpired to release escrow to the worker.
+pub const AUTO_RELEASE_TIMEOUT: i64 = 48 * 60 * 60;
+
 // =============================================================================
 // TASK STATUS
 // =============================================================================

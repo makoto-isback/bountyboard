@@ -34,6 +34,10 @@ pub struct Task {
     pub deadline: i64,              // 8
     /// Compact tag encoding for categorization
     pub tags: [u8; 16],             // 16
+    /// Unix timestamp when work was submitted (0 = not submitted)
+    pub submitted_at: i64,          // 8
+    /// Unix timestamp when task was claimed (0 = not claimed)
+    pub claimed_at: i64,            // 8
 }
 
 account!(BountyBoardAccount, Task);

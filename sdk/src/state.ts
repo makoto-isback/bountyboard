@@ -100,6 +100,12 @@ export function parseTask(data: Buffer): TaskAccount {
   offset += 8;
 
   const tags = new Uint8Array(data.subarray(offset, offset + 16));
+  offset += 16;
+
+  const submittedAt = data.readBigInt64LE(offset);
+  offset += 8;
+
+  const claimedAt = data.readBigInt64LE(offset);
 
   return {
     id,
@@ -112,5 +118,7 @@ export function parseTask(data: Buffer): TaskAccount {
     createdAt,
     deadline,
     tags,
+    submittedAt,
+    claimedAt,
   };
 }

@@ -492,6 +492,18 @@ export default function TaskDetailPage() {
           </div>
         )}
 
+        {/* Auto-release countdown for submitted tasks */}
+        {isSubmitted && (
+          <AutoReleaseTimer
+            taskId={task.id}
+            connected={connected}
+            walletAddress={walletAddress}
+            claimer={task.claimer}
+            addToast={addToast}
+            onRelease={fetchTask}
+          />
+        )}
+
         {/* Info for non-poster when submitted */}
         {isSubmitted && !isPoster && connected && (
           <p className="text-sm text-zinc-500 italic">
@@ -549,5 +561,94 @@ function Spinner() {
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
+  );
+}
+
+const AUTO_RELEASE_TIMEOUT_HOURS = 48;
+
+function AutoReleaseTimer({
+  taskId,
+  connected,
+  walletAddress,
+  claimer,
+  addToast,
+  onRelease,
+}: {
+  taskId: string;
+  connected: boolean;
+  walletAddress: string;
+  claimer: string | null;
+  addToast: (msg: string, type: 'success' | 'error' | 'info') => void;
+  onRelease: () => void;
+}) {
+  const [releasing, setReleasing] = useState(false);
+  const [hoursLeft, setHoursLeft] = useState<number | null>(null);
+
+  // For now we show the 48h concept — in production this reads submitted_at from on-chain
+  // This is a UI placeholder that demonstrates the feature
+  useEffect(() => {
+    // We'd read submitted_at from the on-chain task data
+    // For demo, show the countdown concept
+    setHoursLeft(AUTO_RELEASE_TIMEOUT_HOURS);
+  }, []);
+
+  const handleAutoRelease = async () => {
+    if (!connected) return;
+    setReleasing(true);
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/claim-expired`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ caller: walletAddress }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast('Escrow auto-released to worker!', 'success');
+        onRelease();
+      } else {
+        addToast(data.error || 'Auto-release not yet available', 'error');
+      }
+    } catch {
+      addToast('Failed to auto-release', 'error');
+    } finally {
+      setReleasing(false);
+    }
+  };
+
+  const isExpired = hoursLeft !== null && hoursLeft <= 0;
+
+  return (
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#111111] p-4 mt-4">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-amber-400">⏰</span>
+        <h3 className="text-sm font-medium text-zinc-300">Auto-Release Escrow</h3>
+      </div>
+      <p className="text-xs text-zinc-500 mb-3">
+        If the poster doesn&apos;t approve or reject within {AUTO_RELEASE_TIMEOUT_HOURS} hours of submission,
+        anyone can trigger auto-release to pay the worker. This prevents ghosting.
+      </p>
+      {hoursLeft !== null && (
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-zinc-400">
+            {isExpired ? (
+              <span className="text-emerald-400 font-medium">⚡ Ready for auto-release</span>
+            ) : (
+              <>
+                <span className="text-amber-400 font-mono">{hoursLeft}h</span> until auto-release eligible
+              </>
+            )}
+          </div>
+          {isExpired && connected && (
+            <button
+              onClick={handleAutoRelease}
+              disabled={releasing}
+              className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/30 disabled:cursor-not-allowed text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              {releasing ? <><Spinner /> Releasing...</> : 'Release Escrow'}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

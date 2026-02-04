@@ -10,6 +10,7 @@ export enum BountyBoardInstruction {
   Dispute = 6,
   ResolveDispute = 7,
   CancelTask = 8,
+  ClaimExpired = 9,
 }
 
 export enum TaskStatus {
@@ -42,4 +43,6 @@ export interface TaskAccount {
   createdAt: bigint;
   deadline: bigint;
   tags: Uint8Array;
+  submittedAt: bigint;
+  claimedAt: bigint;
 }

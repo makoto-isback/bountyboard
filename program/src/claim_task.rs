@@ -47,6 +47,7 @@ pub fn process_claim_task(accounts: &[AccountInfo], data: &[u8]) -> ProgramResul
 
     // Claim the task
     task.claimer = *claimer_info.key;
+    task.claimed_at = Clock::get()?.unix_timestamp;
     task.status = STATUS_CLAIMED;
 
     solana_program::msg!("BountyBoard: Task {} claimed by {}", task.id, claimer_info.key);

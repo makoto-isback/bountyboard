@@ -182,6 +182,30 @@ pub fn resolve_dispute(admin: Pubkey, task_id: u64, winner: u8, claimer: Pubkey,
     }
 }
 
+/// Build a ClaimExpired instruction (permissionless auto-release)
+pub fn claim_expired(caller: Pubkey, task_id: u64, claimer: Pubkey) -> Instruction {
+    let config_address = config_pda().0;
+    let task_address = task_pda(task_id).0;
+    let treasury_address = treasury_pda().0;
+
+    Instruction {
+        program_id: crate::ID,
+        accounts: vec![
+            AccountMeta::new(caller, true),
+            AccountMeta::new(config_address, false),
+            AccountMeta::new(task_address, false),
+            AccountMeta::new(claimer, false),
+            AccountMeta::new(treasury_address, false),
+            AccountMeta::new_readonly(system_program::ID, false),
+        ],
+        data: [
+            vec![BountyBoardInstruction::ClaimExpired as u8],
+            bytemuck::bytes_of(&ClaimExpiredArgs::new(task_id)).to_vec(),
+        ]
+        .concat(),
+    }
+}
+
 /// Build a CancelTask instruction
 pub fn cancel_task(creator: Pubkey, task_id: u64) -> Instruction {
     let config_address = config_pda().0;

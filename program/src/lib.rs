@@ -7,6 +7,7 @@ mod reject_work;
 mod dispute;
 mod resolve_dispute;
 mod cancel_task;
+mod claim_expired;
 
 use initialize::*;
 use create_task::*;
@@ -17,6 +18,7 @@ use reject_work::*;
 use dispute::*;
 use resolve_dispute::*;
 use cancel_task::*;
+use claim_expired::*;
 
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, program_error::ProgramError,
@@ -49,6 +51,7 @@ pub fn process_instruction(
         BountyBoardInstruction::Dispute => process_dispute(accounts, data)?,
         BountyBoardInstruction::ResolveDispute => process_resolve_dispute(accounts, data)?,
         BountyBoardInstruction::CancelTask => process_cancel_task(accounts, data)?,
+        BountyBoardInstruction::ClaimExpired => process_claim_expired(accounts, data)?,
     }
 
     Ok(())

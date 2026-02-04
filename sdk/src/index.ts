@@ -10,6 +10,7 @@ export {
   createDisputeInstruction,
   createResolveDisputeInstruction,
   createCancelTaskInstruction,
+  createClaimExpiredInstruction,
 } from "./instructions";
 export {
   getConfigPDA,

@@ -23,6 +23,8 @@ pub enum BountyBoardInstruction {
     ResolveDispute = 7,
     /// Cancel an unclaimed task (refund creator)
     CancelTask = 8,
+    /// Auto-release expired escrow to worker (permissionless, anyone can call after timeout)
+    ClaimExpired = 9,
 }
 
 // =============================================================================
@@ -220,6 +222,25 @@ pub struct CancelTaskArgs {
 }
 
 impl CancelTaskArgs {
+    pub fn new(task_id: u64) -> Self {
+        Self {
+            task_id: task_id.to_le_bytes(),
+        }
+    }
+    pub fn task_id(&self) -> u64 {
+        u64::from_le_bytes(self.task_id)
+    }
+}
+
+/// Arguments for ClaimExpired
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
+pub struct ClaimExpiredArgs {
+    /// Task ID
+    pub task_id: [u8; 8],
+}
+
+impl ClaimExpiredArgs {
     pub fn new(task_id: u64) -> Self {
         Self {
             task_id: task_id.to_le_bytes(),

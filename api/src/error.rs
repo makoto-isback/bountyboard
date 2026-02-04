@@ -42,6 +42,9 @@ pub enum BountyBoardError {
 
     #[error("Invalid winner for dispute resolution")]
     InvalidDisputeWinner = 12,
+
+    #[error("Auto-release timeout has not elapsed yet")]
+    AutoReleaseNotReady = 13,
 }
 
 error!(BountyBoardError);

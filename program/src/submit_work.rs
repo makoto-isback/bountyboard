@@ -1,7 +1,9 @@
 use solana_program::{
     account_info::AccountInfo,
+    clock::Clock,
     entrypoint::ProgramResult,
     program_error::ProgramError,
+    sysvar::Sysvar,
 };
 use steel::*;
 use bountyboard_api::{
@@ -40,8 +42,9 @@ pub fn process_submit_work(accounts: &[AccountInfo], data: &[u8]) -> ProgramResu
         return Err(BountyBoardError::NotClaimer.into());
     }
 
-    // Record proof and update status
+    // Record proof, timestamp, and update status
     task.proof_hash = args.proof_hash;
+    task.submitted_at = Clock::get()?.unix_timestamp;
     task.status = STATUS_SUBMITTED;
 
     solana_program::msg!("BountyBoard: Task {} work submitted", task.id);

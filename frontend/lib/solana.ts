@@ -40,6 +40,8 @@ export interface OnChainTask {
   createdAt: number; // unix timestamp
   deadline: number; // unix timestamp (0 = no deadline)
   tags: Uint8Array;
+  submittedAt: number; // unix timestamp (0 = not submitted)
+  claimedAt: number; // unix timestamp (0 = not claimed)
 }
 
 const STATUS_MAP: Record<number, string> = {
@@ -119,7 +121,9 @@ function parseConfig(data: Buffer): Config {
  *   created_at:       i64       (8)
  *   deadline:         i64       (8)
  *   tags:             [u8;16]   (16)
- *   Total: 8 + 184 = 192 bytes
+ *   submitted_at:     i64       (8)
+ *   claimed_at:       i64       (8)
+ *   Total: 8 + 200 = 208 bytes
  */
 function parseTask(data: Buffer): OnChainTask {
   let o = DISCRIMINATOR_SIZE;
@@ -143,7 +147,11 @@ function parseTask(data: Buffer): OnChainTask {
   const deadline = Number(data.readBigInt64LE(o));
   o += 8;
   const tags = new Uint8Array(data.subarray(o, o + 16));
-  return { id, creator, claimer, bounty, descriptionHash, proofHash, status, createdAt, deadline, tags };
+  o += 16;
+  const submittedAt = Number(data.readBigInt64LE(o));
+  o += 8;
+  const claimedAt = Number(data.readBigInt64LE(o));
+  return { id, creator, claimer, bounty, descriptionHash, proofHash, status, createdAt, deadline, tags, submittedAt, claimedAt };
 }
 
 // ============================================================================
@@ -158,8 +166,8 @@ export async function fetchConfig(connection: Connection): Promise<Config> {
 }
 
 export async function fetchAllTasks(connection: Connection): Promise<OnChainTask[]> {
-  // Use getProgramAccounts with a dataSize filter for Task accounts (192 bytes)
-  const TASK_ACCOUNT_SIZE = DISCRIMINATOR_SIZE + 184; // 192
+  // Use getProgramAccounts with a dataSize filter for Task accounts (208 bytes)
+  const TASK_ACCOUNT_SIZE = DISCRIMINATOR_SIZE + 200; // 208
   const accounts = await connection.getProgramAccounts(PROGRAM_ID, {
     commitment: "confirmed",
     filters: [{ dataSize: TASK_ACCOUNT_SIZE }],

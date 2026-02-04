@@ -276,6 +276,38 @@ export function createResolveDisputeInstruction(
 }
 
 /**
+ * Auto-release expired escrow to worker (permissionless).
+ * Anyone can call this after 48h of submission without approval.
+ */
+export function createClaimExpiredInstruction(
+  caller: PublicKey,
+  taskId: bigint | number,
+  claimer: PublicKey
+): TransactionInstruction {
+  const [configPDA] = getConfigPDA();
+  const [taskPDA] = getTaskPDA(taskId);
+  const [treasuryPDA] = getTreasuryPDA();
+
+  const data = Buffer.concat([
+    Buffer.from([BountyBoardInstruction.ClaimExpired]),
+    encodeU64LE(taskId),
+  ]);
+
+  return new TransactionInstruction({
+    programId: PROGRAM_ID,
+    keys: [
+      { pubkey: caller, isSigner: true, isWritable: true },
+      { pubkey: configPDA, isSigner: false, isWritable: true },
+      { pubkey: taskPDA, isSigner: false, isWritable: true },
+      { pubkey: claimer, isSigner: false, isWritable: true },
+      { pubkey: treasuryPDA, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ],
+    data,
+  });
+}
+
+/**
  * Cancel an unclaimed task. Full bounty refund to creator.
  */
 export function createCancelTaskInstruction(
