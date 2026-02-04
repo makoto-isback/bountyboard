@@ -13,4 +13,4 @@ pub use state::*;
 use steel::*;
 
 // Program ID — replace with actual keypair after `solana-keygen grind`
-declare_id!("66emUkBVuUrEJ1vB8kySE6WtXPQHArnUzvyjJhmBiG3u");
+declare_id!("GJgmGsoz1JaiPpKTTTeZD31TrxZqF7x7gtwuqhDJHHX1");

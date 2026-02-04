@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 
 // Must match the declare_id! in api/src/lib.rs
 export const PROGRAM_ID = new PublicKey(
-  "66emUkBVuUrEJ1vB8kySE6WtXPQHArnUzvyjJhmBiG3u"
+  "GJgmGsoz1JaiPpKTTTeZD31TrxZqF7x7gtwuqhDJHHX1"
 );
 
 export const CONFIG_SEED = Buffer.from("config");
