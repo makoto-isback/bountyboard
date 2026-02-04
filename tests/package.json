@@ -1,0 +1,14 @@
+{
+  "name": "bountyboard-devnet-tests",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "ts-node devnet-test.ts",
+    "seed": "ts-node seed-tasks.ts"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.95.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0"
+  }
+}
