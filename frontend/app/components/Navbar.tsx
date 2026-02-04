@@ -16,7 +16,7 @@ const WalletMultiButton = dynamic(
 const navLinks = [
   { href: '/tasks', label: 'Tasks' },
   { href: '/leaderboard', label: 'Leaderboard' },
-  { href: 'https://github.com/example/bountyboard', label: 'Docs' },
+  { href: '/docs', label: 'Docs' },
 ];
 
 export default function Navbar() {
